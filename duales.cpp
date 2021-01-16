@@ -1,6 +1,9 @@
 #include <iostream>
 #include <cmath>
-using namespace std;
+using std::cout;
+using std::string;
+using std::to_string;
+using std::endl;
 //g++ duales.cpp -o a && a.exe
 
 class dual{
@@ -36,7 +39,7 @@ class dual{
     }
 
     dual operator^(double i){
-    dual dr(pow(a,i),i*pow(a,i-1)*b,i*(i-1)*pow(a,i-2)*c);
+    dual dr(pow(a,i),i*pow(a,i-1)*b,i*(i-1)*pow(a,i-2)*b*b+i*pow(a,i-1)*c);
     return dr;
     }
 
@@ -58,21 +61,30 @@ class dual{
 };
 
 dual sin(const dual &d){
-    dual dr(sin(d.a),d.b*cos(d.a),-d.c*sin(d.a));
+    dual dr(sin(d.a),d.b*cos(d.a),-sin(d.a)*d.b*d.b+cos(d.a)*d.c);
     return dr;
 }
 
+dual cos(const dual &d){
+    dual dr(cos(d.a),-d.b*sin(d.a),-cos(d.a)*d.b*d.b-sin(d.a)*d.c);
+    return dr;
+}
+
+dual exp(const dual &d){
+    dual dr(exp(d.a),d.b*exp(d.a),exp(d.a)*d.b*d.b+exp(d.a)*d.c);
+    return dr;
+}
 int main(){
 
-    dual d(4,1,0); 
-    dual p(4,1,1);
+    dual d(0.2,1,0); 
+    dual p(4,1,0);
     cout<< d.ToString()<<endl;
     cout<< p.ToString()<<endl;
     cout<< (p+d).ToString()<<endl;  
-    cout<< (p*d).ToString()<<endl;
     cout<< (p^0.5).ToString()<<endl;
-    cout<< (p*p).ToString()<<endl;
     cout<< (sin(sin(p))).ToString()<<endl;
+    cout<< (p^2).ToString()<<endl;
+    cout<< (exp(exp(d))).ToString()<<endl;
     return 0;
 
 }
