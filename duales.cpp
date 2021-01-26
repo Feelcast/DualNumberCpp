@@ -22,6 +22,7 @@ class dual{
         b=1;
         c=0;
     }
+
     dual operator+(const dual& d){
         dual dr(a+d.a,b+d.b,c+d.c);
         return dr;
@@ -89,7 +90,7 @@ class dual{
     }
 
     dual intln(const dual &d){
-    if(d.a!=0){
+    if(d.a>0){
     dual dr(log(d.a),d.b/d.a,-d.b*d.b/(d.a*d.a)+d.c/d.a);
     return dr;
     }
@@ -106,7 +107,6 @@ class dual{
 
     dual operator^(const dual &d){
     dual buf(a,b,c);
-
     dual dr = intexp(intln(buf)*d);
     return dr;
     }
@@ -128,6 +128,58 @@ class dual{
     }
 };
 
+class duvec{
+    public:
+    dual *v;
+    int s;
+    duvec(dual vi[],int size){
+        s = size;
+        for(int i =0 ;i<size;i++){
+            v[i]=vi[i];
+        }
+    }
+
+    duvec operator+(const duvec &r){
+        if(s==r.s){
+            dual *b;
+            for(int i =0 ;i<s;i++){
+            b[i]= v[i] + r.v[i];
+            }
+            return duvec(b,s);
+        }
+        else{
+            return duvec(0,1);
+        }
+    }
+
+    duvec ih(){
+        dual b[3] = {dual(0,1,0),dual(0),dual(0)};
+        return duvec(b,3);
+    }
+
+    duvec jh(){
+        dual b[3] = {dual(0),dual(0,1,0),dual(0)};
+        return duvec(b,3);
+    }
+
+    duvec kh(){
+        dual b[3] = {dual(0),dual(0),dual(0,1,0)};
+        return duvec(b,3);
+    }
+
+    void rep(){
+        string b ="[";
+        for(int i =0 ;i<s;i++){
+            if(i<s-1){
+            b+=v[i].ToString()+",";
+            }
+            else{
+              b+=v[i].ToString()+"]";  
+            }
+    }
+    }
+};
+
 dual operator+(double d, const dual &r){
         dual dr(r.a+d,r.b,r.c);
         return dr;
@@ -141,6 +193,7 @@ dual operator-(const dual &r){
         dual dr(-r.a,-r.b,-r.c);
         return dr;
 }
+
 
 dual sin(const dual &d){
     dual dr(sin(d.a),d.b*cos(d.a),-sin(d.a)*d.b*d.b+cos(d.a)*d.c);
@@ -158,7 +211,7 @@ dual exp(const dual &d){
 }
 
 dual ln(const dual &d){
-    if(d.a!=0){
+    if(d.a>0){
     dual dr(log(d.a),d.b/d.a,-d.b*d.b/(d.a*d.a)+d.c/d.a);
     return dr;
     }
@@ -177,6 +230,11 @@ int main(){
 
     dual d = 0.2;
     dual p = 4;
+    dual q = -1;
+    dual v1[3] = {p,d,q};
+    dual v2[3] = {q,d,p};
+    duvec av(v1,3);
+    duvec bv(v2,3);
     cout<< d.ToString()<<endl;
     cout<< p.ToString()<<endl;
     cout<< (1-d).ToString()<<endl;  
@@ -186,6 +244,7 @@ int main(){
     cout<< (p^2).ToString()<<endl;
     cout<< (exp(exp(d))).ToString()<<endl;
     cout<< (p^cos(p)).ToString()<<endl;
+    cout<< (0-d).ToString()<<endl;
+    cout<< (q^3).ToString()<<endl;
     return 0;
-
 }
