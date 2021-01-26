@@ -16,13 +16,31 @@ class dual{
         b=y;
         c=z;
     }
+
+    dual(double x){
+        a=x;
+        b=1;
+        c=0;
+    }
     dual operator+(const dual& d){
         dual dr(a+d.a,b+d.b,c+d.c);
+        return dr;
+    }
+    dual operator+(double d){
+        dual dr(a+d,b,c);
         return dr;
     }
     dual operator-(const dual& d){
         dual dr(a-d.a,b-d.b,c+d.c);
         return dr;
+    }
+    dual operator-(double d){
+        dual dr(a-d,b,c);
+        return dr;
+    }
+    dual operator*(double d){
+    dual dr(d*a,d*b,d*c);
+    return dr;
     }
     dual operator*(const dual& d){
     dual dr(a*d.a,b*d.a+a*d.b,a*d.c+b*d.b+c*d.a);
@@ -38,8 +56,58 @@ class dual{
         return dr;
     }
 
-    dual operator^(double i){
-    dual dr(pow(a,i),i*pow(a,i-1)*b,i*(i-1)*pow(a,i-2)*b*b+i*pow(a,i-1)*c);
+    dual operator/(double d){
+        dual dr(0,0,0);
+        if(d!=0){
+            dr.a =a/d;
+            dr.b=b/d;
+            dr.c=c/d;
+        }
+        return dr;
+    }
+    void operator=(const dual &d){
+        a=d.a;
+        b=d.b;
+        c=d.c;
+    }
+    void operator=(double d){
+        a=d;
+        b=1;
+        c=0;
+    }
+
+    bool operator==(const dual &d){
+        return (a==d.a & b==d.b & c==d.c);
+    }
+    bool operator!=(const dual &d){
+        return !(a==d.a & b==d.b & c==d.c);
+    }
+
+    dual intexp(const dual &d){
+    dual dr(exp(d.a),d.b*exp(d.a),exp(d.a)*d.b*d.b+exp(d.a)*d.c);
+    return dr;
+    }
+
+    dual intln(const dual &d){
+    if(d.a!=0){
+    dual dr(log(d.a),d.b/d.a,-d.b*d.b/(d.a*d.a)+d.c/d.a);
+    return dr;
+    }
+    else{
+    dual dr(0,0,0);
+    return dr;
+    }
+    }
+
+    dual operator^(double d){
+    dual dr(pow(a,d),d*pow(a,d-1)*b,(d)*(d-1)*pow(a,d-2)*b*b+d*pow(a,d-1)*c);
+    return dr;
+    }
+
+    dual operator^(const dual &d){
+    dual buf(a,b,c);
+
+    dual dr = intexp(intln(buf)*d);
     return dr;
     }
 
@@ -60,6 +128,20 @@ class dual{
     }
 };
 
+dual operator+(double d, const dual &r){
+        dual dr(r.a+d,r.b,r.c);
+        return dr;
+}
+dual operator-(double d, const dual &r){
+        dual dr(d-r.a,-r.b,-r.c);
+        return dr;
+}
+
+dual operator-(const dual &r){
+        dual dr(-r.a,-r.b,-r.c);
+        return dr;
+}
+
 dual sin(const dual &d){
     dual dr(sin(d.a),d.b*cos(d.a),-sin(d.a)*d.b*d.b+cos(d.a)*d.c);
     return dr;
@@ -74,17 +156,36 @@ dual exp(const dual &d){
     dual dr(exp(d.a),d.b*exp(d.a),exp(d.a)*d.b*d.b+exp(d.a)*d.c);
     return dr;
 }
+
+dual ln(const dual &d){
+    if(d.a!=0){
+    dual dr(log(d.a),d.b/d.a,-d.b*d.b/(d.a*d.a)+d.c/d.a);
+    return dr;
+    }
+    else{
+    dual dr(0,0,0);
+    return dr;
+    }
+}
+
+dual tan(const dual &d){
+    dual dr = sin(d)/cos(d);
+    return dr;
+}
+
 int main(){
 
-    dual d(0.2,1,0); 
-    dual p(4,1,0);
+    dual d = 0.2;
+    dual p = 4;
     cout<< d.ToString()<<endl;
     cout<< p.ToString()<<endl;
-    cout<< (p+d).ToString()<<endl;  
+    cout<< (1-d).ToString()<<endl;  
+    cout<< (-d).ToString()<<endl; 
     cout<< (p^0.5).ToString()<<endl;
     cout<< (sin(sin(p))).ToString()<<endl;
     cout<< (p^2).ToString()<<endl;
     cout<< (exp(exp(d))).ToString()<<endl;
+    cout<< (p^cos(p)).ToString()<<endl;
     return 0;
 
 }
