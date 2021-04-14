@@ -1,10 +1,12 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <bits/stdc++.h> 
 using std::cout;
 using std::string;
 using std::to_string;
 using std::endl;
+using std::vector;
 //copiar y pegar en terminal:  g++ duales.cpp -o a && a.exe
 
 class dual{
@@ -20,7 +22,7 @@ class dual{
 
     dual(double x){
         a=x;
-        b=1;
+        b=0;
         c=0;
     }
 
@@ -144,8 +146,183 @@ class dual{
 
 
 class duvec{
-  
+  public:
+  vector<dual> v;
+  duvec(vector<dual> t){
+      v=t;
+  }
+  duvec(dual t[], int size){
+      for(int i=0;i<size;i++){
+          v.push_back(t[i]);
+      }
+  }
+  duvec(std::initializer_list<dual> t){
+      v = vector<dual>(t);
+  }
+  duvec operator+(const duvec &d){
+        int s;
+        if (d.v.size()<=v.size()){
+          s = d.v.size();  
+        }
+        else{
+            s = v.size();
+        }
+        
+        vector<dual> buf;
+        for(int i =0;i<s;i++){
+            buf.push_back(v[i]+d.v[i]);
+        }
+        return duvec(buf);
+    }
+
+    duvec operator-(const duvec &d){
+        int s;
+        if (d.v.size()<=v.size()){
+          s = d.v.size();  
+        }
+        else{
+            s = v.size();
+        }
+        
+        vector<dual> buf;
+        for(int i =0;i<s;i++){
+            buf.push_back(v[i]-d.v[i]);
+        }
+        return duvec(buf);
+    }
+    void  operator=(std::initializer_list<dual> t){
+        v = vector<dual>(t);
+    }
+    void  operator=(std::initializer_list<double> t){
+         vector<double> dbuf = vector<double>(t);
+         for (double d: dbuf){
+             v.push_back(dual(d));
+         }
+    }
+    string ToString(){
+           string s = "[";
+           for(int i =0;i<v.size();i++ ){               
+            if(i==v.size()-1){
+            s+= v[i].ToString()+"]"; 
+            }  
+            else{
+            s+= v[i].ToString()+","; 
+            }    
+        }
+        return s;
+    }
+    string RealPart(){
+           string s = "{";
+           for(int i =0;i<v.size();i++ ){               
+            if(i==v.size()-1){
+            s+= to_string(v[i].a) + "}"; 
+            }  
+            else{
+            s+= to_string(v[i].a) + ","; 
+            }    
+        }
+        return s;
+    }
+    dual operator[](const unsigned int i){
+        if (i< v.size()){
+            return v[i];
+        }
+        else{
+            return dual(0);
+        }
+    }
+    void add (dual d){
+        v.push_back(d);
+    }
+
 };
+
+
+class dumat{
+public:
+int n,m;
+vector<dual> mat;
+
+template <size_t rows, size_t cols>
+dumat(dual (&array)[rows][cols])
+{
+    n = rows;
+    m = cols;
+for (int i = 0; i < rows; ++i)
+    {     
+        for (int j = 0; j < cols; ++j){
+            mat.push_back(array[j][i]);
+        }
+    }
+}
+
+template <size_t rows, size_t cols>
+dumat(double (&array)[rows][cols],char part)
+{
+    n = rows;
+    m = cols;
+for (int i = 0; i < rows; ++i)
+    {       
+        for (int j = 0; j < cols; ++j){
+            switch (part){
+                case 'r':
+                mat.push_back(dual(array[j][i],0,0));
+                break;
+                
+                case 'h':
+                mat.push_back(dual(0,array[j][i],0));
+                break;
+
+                case 'k':
+                mat.push_back(dual(0,0,array[j][i]));
+                break;
+            }         
+        }
+    }
+}
+
+dual element(int i,int j){
+    if(j*n+i < n*m){
+        return mat[j*n+i];
+    }
+    else{
+        return dual(0);
+    }
+}
+
+string Show(){
+    for (int i =0;i<n;i++){
+        for (int j =0;j<m;j++){
+        cout<<mat[j*n+i].ToString() + ' ';
+        } 
+        cout<<endl;
+    }          
+}
+
+string ShowReal(){
+    for (int i =0;i<n;i++){
+        for (int j =0;j<m;j++){
+        cout<<to_string(mat[j*n+i].a) + ' ';
+        } 
+        cout<<endl;
+    }          
+}
+
+};
+
+
+duvec uh(unsigned int id){
+        vector<dual> buf;
+        for(int i =0;i<id;i++){
+            if(i<id-1){
+                buf.push_back(dual(0));
+            }
+            else{
+                buf.push_back(dual(0,1,0));
+            }         
+        }
+    return duvec(buf);
+}
 
 dual operator+(double d, const dual &r){
         dual dr(r.a+d,r.b,r.c);
@@ -193,23 +370,52 @@ dual tan(const dual &d){
     return dr;
 }
 
+duvec gradient(std::function<dual(duvec)> function, duvec in){
+    duvec  g = duvec({});
+    for (dual d : in.v){
+        if(d.b || d.c !=0){
+        d.b = 0;
+        d.c = 0;
+        }
+    }
+    for (int i =1;i<=in.v.size();i++){
+        dual buf = function(in+uh(i)).b;
+        g.add(buf);
+    }
+    return g;
+}
+
+dual sphere(duvec dv){
+dual x = dv[0];
+dual y = dv[1];
+dual z = dv[2];
+
+return (x^2) + (y^2)+(z^2);
+}
+
 int main(){
 
-     dual A1 = dual(-1.1,1.0,0.0);
+  dual A1 = dual(-1.1,1.0,0.0);
   dual B1 = dual(-1.1,0.0,0.0);
   dual A2 = dual(-1.0,0.0,0.0);
   dual B2 = dual(3.0,0.0,0.0);
-  dual A3 = 1.0;
+  dual A3 = 2.0;
   dual B3 = 0.0;
   dual A4 = dual(0.0,1.0,2.0);
   dual B4 = dual(1.1,2.2,3.3);
   dual xd = dual(1.1,1.0,0.0);
   dual rd = 0.0;
-  
+
+  double exmat[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
+  dumat t = dumat(exmat,'r');
+
+  duvec v1 = {2,2,2}; 
+
+  duvec g = gradient(sphere, v1);
   
   cout<< (A1^B1).ToString()<<endl; //deberia dar nans
   cout<< (A2^B2).ToString()<<endl; //deberia dar -1
-  cout<< (A3).ToString()<<endl; //en mi opinion deberia dar 1, pero eso
+  cout<< (A3^2).ToString()<<endl; //en mi opinion deberia dar 1, pero eso
   //depende de como se haya definido. Siempre ten en mente algo como la
   //extension de los reales a los complejos, el complejo 1 es 1 + 0i
   //solo se usa la parte h=1 cuando se desea derivar respecto a esa variable,
@@ -224,5 +430,10 @@ int main(){
   rd = sin(xd)^exp(cos(xd^2));
 
   cout<< (rd).ToString()<<endl; //debe dar 0.848793+0.901325h-3.186792k
+  cout<< g.RealPart() <<endl;
+    cout<< endl;
+   t.ShowReal();
+   cout<< endl;
+   cout<<t.element(0,1).ToString();
     return 0;
 }
